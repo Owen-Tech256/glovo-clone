@@ -1,0 +1,79 @@
+{#- Reusable presentation components. Import with: {% from 'partials/_components.html' import ... with context %} -#}
+{% set CATEGORY_ICONS = {'food': 'food', 'restaurants': 'food', 'groceries': 'grocery', 'pharmacy': 'pharmacy', 'electronics': 'electronics', 'bakery': 'bakery', 'flowers': 'gift', 'gifts': 'gift', 'home & living': 'shop', 'fashion': 'bag', 'beauty': 'pharmacy'} %}
+
+{% macro icon(name, cls='') -%}
+<svg class="icon {{ cls }}" aria-hidden="true" focusable="false"><use href="{{ url_for('static', filename='img/icons.svg') }}#{{ name }}"></use></svg>
+{%- endmacro %}
+
+{% macro ugx(amount) -%}UGX {{ '{:,}'.format(amount) }}{%- endmacro %}
+
+{% macro media(image_url, category, name, size='card') -%}
+{%- set safe = image_url and image_url.startswith('/') and not image_url.startswith('//') -%}
+<div class="media media--{{ size }}">
+  {% if safe %}<img src="{{ image_url }}" alt="" width="320" height="240" loading="lazy" decoding="async" data-fallback>{% endif %}
+  <span class="media__placeholder" {% if safe %}hidden{% endif %}>{{ icon(CATEGORY_ICONS.get((category or '')|lower, 'bag'), 'icon--lg') }}</span>
+</div>
+{%- endmacro %}
+
+{% macro product_card(product) -%}
+<article class="card product-card">
+  {{ media(product.image_url, product.category, product.name) }}
+  <div class="card__body">
+    <p class="card__meta">{{ product.category }} · {{ product.vendor.business_name }}</p>
+    <h3 class="card__title"><a class="card__link" href="{{ url_for('marketplace.product_detail', public_id=product.public_id) }}">{{ product.name }}</a></h3>
+    {% if product.description %}<p class="card__text">{{ product.description|truncate(90) }}</p>{% endif %}
+    <div class="card__foot">
+      <span class="price">{{ ugx(product.price_ugx) }}</span>
+      {% if product.stock_quantity < 1 %}<span class="badge badge--muted">Out of stock</span>{% elif product.stock_quantity <= 5 %}<span class="badge badge--accent">Only {{ product.stock_quantity }} left</span>{% endif %}
+    </div>
+    <form class="card__action" method="post" action="{{ url_for('marketplace.cart_add', public_id=product.public_id) }}" data-submit-once>
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="button block" type="submit" {% if product.stock_quantity < 1 %}disabled{% endif %}>{{ 'Add to cart' if product.stock_quantity >= 1 else 'Out of stock' }}</button>
+    </form>
+  </div>
+</article>
+{%- endmacro %}
+
+{% macro vendor_card(vendor) -%}
+<article class="card vendor-card">
+  <div class="card__body">
+    <div class="vendor-card__head">
+      <span class="vendor-card__avatar" aria-hidden="true">{{ vendor.business_name[:1]|upper }}</span>
+      <div>
+        <h3 class="card__title"><a class="card__link" href="{{ url_for('marketplace.home', q=vendor.business_name) }}">{{ vendor.business_name }}</a></h3>
+        <p class="card__meta">{{ vendor.category }}</p>
+      </div>
+    </div>
+    {% if vendor.description %}<p class="card__text">{{ vendor.description|truncate(110) }}</p>{% endif %}
+    <div class="card__foot">
+      {% if vendor.is_featured %}<span class="badge badge--accent">Featured</span>{% else %}<span class="badge">Approved store</span>{% endif %}
+      <span class="vendor-card__cta">Browse products {{ icon('arrow', 'icon--sm') }}</span>
+    </div>
+  </div>
+</article>
+{%- endmacro %}
+
+{% macro category_card(label, term, icon_name, tint, blurb, planned=False) -%}
+{% if planned %}
+<div class="category-card category-card--planned tint-{{ tint }}">
+  <span class="category-card__icon">{{ icon(icon_name, 'icon--lg') }}</span>
+  <span class="category-card__label">{{ label }}</span>
+  <span class="badge badge--muted">Planned</span>
+</div>
+{% else %}
+<a class="category-card tint-{{ tint }}" href="{{ url_for('marketplace.home', q=term) }}">
+  <span class="category-card__icon">{{ icon(icon_name, 'icon--lg') }}</span>
+  <span class="category-card__label">{{ label }}</span>
+  <span class="category-card__blurb">{{ blurb }}</span>
+</a>
+{% endif %}
+{%- endmacro %}
+
+{% macro empty_state(icon_name, title, text) -%}
+<div class="empty">
+  {{ icon(icon_name) }}
+  <h3>{{ title }}</h3>
+  <p class="muted">{{ text }}</p>
+  {% if caller %}{{ caller() }}{% endif %}
+</div>
+{%- endmacro %}

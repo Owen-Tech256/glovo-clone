@@ -1,0 +1,14 @@
+{#- Status is conveyed by a text label as well as colour. Categories: success, info, warning, danger. -#}
+{% set labels = {"success": "Success", "info": "Notice", "warning": "Warning", "danger": "Error"} %}
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="flash-list">
+      {% for category, message in messages %}
+        {% set kind = category if category in labels else "info" %}
+        <div class="alert alert--{{ kind }}" role="{{ 'alert' if kind in ('warning', 'danger') else 'status' }}">
+          <strong class="alert__label">{{ labels[kind] }}:</strong> {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}

@@ -1,0 +1,81 @@
+{% from 'partials/_components.html' import icon with context %}
+<header class="site-header">
+  <div class="container header">
+    <a class="brand" href="{{ url_for('marketplace.home') }}">
+      <svg class="brand__mark" aria-hidden="true" focusable="false"><use href="{{ url_for('static', filename='img/icons.svg') }}#logo"></use></svg>
+      <span class="brand__name">{{ config.SITE_NAME }}</span>
+    </a>
+
+    <details class="menu location" data-menu>
+      <summary class="location__trigger" aria-label="Choose delivery area">
+        {{ icon('pin') }}
+        <span class="location__text"><span class="location__hint">Deliver to</span><span class="location__value" data-location-label>Choose area</span></span>
+        {{ icon('chevron', 'icon--sm') }}
+      </summary>
+      <div class="menu__panel">
+        <p class="menu__title">Delivery areas</p>
+        {% if nav_zones %}
+        <ul class="menu__list">
+          {% for zone in nav_zones %}
+          <li><button type="button" class="menu__item" data-zone="{{ zone.name }}">{{ icon('pin', 'icon--sm') }}<span>{{ zone.name }}<span class="muted small"> · {{ zone.city }}</span></span></button></li>
+          {% endfor %}
+        </ul>
+        <p class="menu__note">Your exact address is entered at checkout.</p>
+        {% else %}
+        <p class="menu__note">Delivery areas will appear here once they are opened.</p>
+        {% endif %}
+      </div>
+    </details>
+
+    <form class="header-search" role="search" method="get" action="{{ url_for('marketplace.home') }}" data-suggest data-endpoint="{{ url_for('marketplace.api_catalog') }}" data-product-url="{{ url_for('marketplace.product_detail', public_id='00000000-0000-0000-0000-000000000000') }}">
+      <label class="sr-only" for="site-search">Search products and shops</label>
+      <span class="header-search__icon">{{ icon('search') }}</span>
+      <input id="site-search" name="q" type="search" value="{{ q|default('', true) }}" maxlength="100" placeholder="Search products, shops and more" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="search-suggestions" aria-autocomplete="list">
+      <div class="suggest" id="search-suggestions" role="listbox" aria-label="Search suggestions" hidden></div>
+    </form>
+
+    <div class="header-actions">
+      <a class="icon-button cart-link" href="{{ url_for('marketplace.cart') }}">
+        {{ icon('cart') }}
+        <span class="sr-only">Cart</span>
+        <span class="cart-count" data-cart-count {% if not cart_count %}hidden{% endif %}>{{ cart_count }}<span class="sr-only"> items in cart</span></span>
+      </a>
+      {% if not current_user.is_authenticated %}
+      <a class="header-link" href="{{ url_for('marketplace.login') }}">Sign in</a>
+      <a class="button header-cta" href="{{ url_for('marketplace.register') }}">Create account</a>
+      {% endif %}
+      <details class="menu menu--right account-menu" data-menu>
+        <summary class="icon-button" aria-label="{{ 'Account menu' if current_user.is_authenticated else 'Menu' }}">
+          {% if current_user.is_authenticated %}<span class="avatar" aria-hidden="true">{{ current_user.email[:1]|upper }}</span>{% else %}{{ icon('menu') }}{% endif %}
+        </summary>
+        <div class="menu__panel">
+          {% if current_user.is_authenticated %}<p class="menu__title">{{ current_user.email }}</p>{% endif %}
+          <ul class="menu__list">
+            <li><a class="menu__item" href="{{ url_for('marketplace.home') }}">{{ icon('shop', 'icon--sm') }}Discover</a></li>
+            <li><a class="menu__item" href="{{ url_for('marketplace.orders') }}">{{ icon('orders', 'icon--sm') }}My orders</a></li>
+            <li><a class="menu__item" href="{{ url_for('marketplace.cart') }}">{{ icon('cart', 'icon--sm') }}Cart</a></li>
+            {% if current_user.is_authenticated %}
+              {% if current_user.has_role('vendor_owner','vendor_staff') %}<li><a class="menu__item" href="{{ url_for('marketplace.vendor_dashboard') }}">{{ icon('dashboard', 'icon--sm') }}Vendor workspace</a></li>{% else %}<li><a class="menu__item" href="{{ url_for('marketplace.vendor_apply') }}">{{ icon('shop', 'icon--sm') }}Sell with us</a></li>{% endif %}
+              <li><a class="menu__item" href="{{ url_for('marketplace.rider_dashboard') }}">{{ icon('truck', 'icon--sm') }}{{ 'Rider workspace' if current_user.has_role('rider') else 'Deliver with us' }}</a></li>
+              {% if current_user.has_role('super_admin','operations_manager','support_agent','finance_operator') %}<li><a class="menu__item" href="{{ url_for('marketplace.admin_dashboard') }}">{{ icon('dashboard', 'icon--sm') }}Admin</a></li>{% endif %}
+              {% if current_user.has_role('super_admin','finance_operator') %}<li><a class="menu__item" href="{{ url_for('marketplace.finance_dashboard') }}">{{ icon('dashboard', 'icon--sm') }}Finance</a></li>{% endif %}
+              <li><a class="menu__item" href="{{ url_for('marketplace.support_new') }}">{{ icon('help', 'icon--sm') }}Help and support</a></li>
+              <li>
+                <form class="menu__form" method="post" action="{{ url_for('marketplace.logout') }}">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button class="menu__item" type="submit">{{ icon('logout', 'icon--sm') }}Sign out</button>
+                </form>
+              </li>
+            {% else %}
+              <li><a class="menu__item" href="{{ url_for('marketplace.vendor_apply') }}">{{ icon('shop', 'icon--sm') }}Sell with us</a></li>
+              <li><a class="menu__item" href="{{ url_for('marketplace.rider_dashboard') }}">{{ icon('truck', 'icon--sm') }}Deliver with us</a></li>
+              <li><a class="menu__item" href="{{ url_for('marketplace.support_new') }}">{{ icon('help', 'icon--sm') }}Help and support</a></li>
+              <li class="menu__sep"><a class="menu__item" href="{{ url_for('marketplace.login') }}">{{ icon('user', 'icon--sm') }}Sign in</a></li>
+              <li><a class="menu__item menu__item--strong" href="{{ url_for('marketplace.register') }}">{{ icon('check', 'icon--sm') }}Create account</a></li>
+            {% endif %}
+          </ul>
+        </div>
+      </details>
+    </div>
+  </div>
+</header>

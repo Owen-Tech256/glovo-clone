@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% from 'partials/_components.html' import icon, product_card, vendor_card, category_card, empty_state with context %}
+{% block title %}Discover · {{ config.SITE_NAME }}{% endblock %}
+{% block content %}
+{% set categories = [
+  ('Restaurants and food', 'Food', 'food', 'sun', 'Meals and takeaway', False),
+  ('Groceries and supermarkets', 'Groceries', 'grocery', 'sky', 'Fresh and everyday', False),
+  ('Pharmacy and personal care', 'Pharmacy', 'pharmacy', 'rose', 'Health and care', False),
+  ('Shops and retail', 'Home & living', 'shop', 'lilac', 'Retail and lifestyle', False),
+  ('Bakery and desserts', 'Bakery', 'bakery', 'sun', 'Fresh from the oven', False),
+  ('Flowers and gifts', 'Gifts', 'gift', 'rose', 'For every occasion', False),
+  ('Electronics and household', 'Electronics', 'electronics', 'sky', 'Gadgets and home', False),
+  ('Parcel delivery and errands', '', 'parcel', 'lilac', '', True),
+] %}
+
+{% if not q %}
+<section class="hero" aria-labelledby="hero-title">
+  <div class="hero__copy">
+    <p class="eyebrow">Your neighbourhood, connected</p>
+    <h1 id="hero-title">Everything you need, delivered.</h1>
+    <p class="hero__lead">Order food, groceries and everyday essentials from approved local businesses across Uganda.</p>
+    <form class="hero-search" method="get" action="{{ url_for('marketplace.home') }}" role="search">
+      <div class="hero-search__field hero-search__field--zone">
+        <label for="hero-zone">Delivery area</label>
+        <select id="hero-zone" data-zone-select>
+          <option value="">{{ 'Choose your area' if zones else 'Areas opening soon' }}</option>
+          {% for zone in zones %}<option value="{{ zone.name }}">{{ zone.name }}, {{ zone.city }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="hero-search__field hero-search__field--query">
+        <label for="hero-q">What are you looking for?</label>
+        <input id="hero-q" name="q" type="search" maxlength="100" placeholder="Products, shops, categories" autocomplete="off">
+      </div>
+      <button class="button hero-search__submit" type="submit">{{ icon('search') }}Search</button>
+    </form>
+    <p class="hero__note">Selected areas in Uganda · Prices in UGX · Delivery details are confirmed at checkout</p>
+  </div>
+  <div class="hero__art">
+    <img src="{{ url_for('static', filename='img/hero-delivery.svg') }}" alt="" width="560" height="420" decoding="async">
+  </div>
+</section>
+
+<ul class="trust-strip" aria-label="Why shop here">
+  <li>{{ icon('shield') }}<span><strong>Approved stores only</strong><span class="muted small">Every business is reviewed first</span></span></li>
+  <li>{{ icon('truck') }}<span><strong>Delivered to you</strong><span class="muted small">Riders collect from the store</span></span></li>
+  <li>{{ icon('orders') }}<span><strong>Pay on delivery</strong><span class="muted small">Order now, settle with the rider</span></span></li>
+</ul>
+
+<section aria-labelledby="cat-title">
+  <div class="section-head"><h2 id="cat-title">Explore categories</h2></div>
+  <div class="category-grid">
+    {% for label, term, icon_name, tint, blurb, planned in categories %}{{ category_card(label, term, icon_name, tint, blurb, planned) }}{% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{% if q %}
+<section aria-labelledby="results-title">
+  <div class="section-head">
+    <div>
+      <p class="eyebrow muted"><a href="{{ url_for('marketplace.home') }}">Discover</a></p>
+      <h1 id="results-title">Results for “{{ q }}”</h1>
+    </div>
+    <span class="muted" role="status">{{ products|length }} item{{ '' if products|length == 1 else 's' }}</span>
+  </div>
+  {% if products %}
+  <div class="grid grid--cards">{% for product in products %}{{ product_card(product) }}{% endfor %}</div>
+  {% else %}
+  {% call empty_state('search', 'No matches for “' ~ q ~ '”', 'Check the spelling, try a broader word, or pick a category.') %}
+    <a class="button secondary" href="{{ url_for('marketplace.home') }}">Clear search</a>
+  {% endcall %}
+  {% endif %}
+</section>
+{% else %}
+{% if products %}
+  {% set ns = namespace(food=[], grocery=[], rest=[]) %}
+  {% for p in products %}
+    {% set c = p.category|lower %}
+    {% if c in ['food', 'restaurants', 'bakery'] and ns.food|length < 4 %}{% set ns.food = ns.food + [p] %}
+    {% elif c == 'groceries' and ns.grocery|length < 4 %}{% set ns.grocery = ns.grocery + [p] %}
+    {% else %}{% set ns.rest = ns.rest + [p] %}{% endif %}
+  {% endfor %}
+  {% if ns.food %}
+  <section aria-labelledby="food-title">
+    <div class="section-head"><h2 id="food-title">Food and takeaway</h2><a class="section-link" href="{{ url_for('marketplace.home', q='Food') }}">See all {{ icon('arrow', 'icon--sm') }}</a></div>
+    <div class="grid grid--cards">{% for product in ns.food %}{{ product_card(product) }}{% endfor %}</div>
+  </section>
+  {% endif %}
+  {% if ns.grocery %}
+  <section aria-labelledby="grocery-title">
+    <div class="section-head"><h2 id="grocery-title">Grocery essentials</h2><a class="section-link" href="{{ url_for('marketplace.home', q='Groceries') }}">See all {{ icon('arrow', 'icon--sm') }}</a></div>
+    <div class="grid grid--cards">{% for product in ns.grocery %}{{ product_card(product) }}{% endfor %}</div>
+  </section>
+  {% endif %}
+  {% if ns.rest %}
+  <section aria-labelledby="fresh-title">
+    <div class="section-head"><h2 id="fresh-title">{{ 'More from local stores' if (ns.food or ns.grocery) else 'Fresh from local stores' }}</h2><span class="muted">{{ products|length }} items</span></div>
+    <div class="grid grid--cards">{% for product in ns.rest %}{{ product_card(product) }}{% endfor %}</div>
+  </section>
+  {% endif %}
+{% else %}
+<section aria-labelledby="fresh-title">
+  <div class="section-head"><h2 id="fresh-title">Fresh from local stores</h2></div>
+  {% call empty_state('shop', 'No products found yet', 'Approved businesses are still joining. Check back soon.') %}
+    <a class="button secondary" href="{{ url_for('marketplace.vendor_apply') }}">List your business</a>
+  {% endcall %}
+</section>
+{% endif %}
+{% endif %}
+
+<section aria-labelledby="stores-title">
+  <div class="section-head"><h2 id="stores-title">{{ 'Featured and local stores' if vendors|selectattr('is_featured')|list else 'Local businesses' }}</h2></div>
+  {% if vendors %}
+  <div class="grid grid--stores">{% for vendor in vendors %}{{ vendor_card(vendor) }}{% endfor %}</div>
+  {% else %}
+  <p class="muted">Approved stores will appear here.</p>
+  {% endif %}
+</section>
+
+<section class="cta-strip" aria-labelledby="cta-title">
+  <div><h2 id="cta-title">Own a local business?</h2><p>Reach new customers with your own vendor workspace.</p></div>
+  <a class="button accent" href="{{ url_for('marketplace.vendor_apply') }}">Become a vendor</a>
+</section>
+{% endblock %}

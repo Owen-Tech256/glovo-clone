@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 420" role="img" aria-label="A shopping bag of fresh produce next to a map pin on a delivery route">
+  <rect x="0" y="0" width="560" height="420" rx="28" fill="#005640"/>
+  <circle cx="450" cy="90" r="64" fill="#FFC244"/>
+  <circle cx="90" cy="340" r="90" fill="#00704F"/>
+  <path d="M60 120h70M60 150h110M400 330h100M430 360h70" stroke="#00704F" stroke-width="10" stroke-linecap="round"/>
+  <path d="M96 300C150 230 190 330 260 270S330 190 410 230" fill="none" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round" stroke-dasharray="2 16" opacity="0.9"/>
+  <!-- map pin -->
+  <path d="M430 120c-28 0-50 22-50 50 0 36 50 82 50 82s50-46 50-82c0-28-22-50-50-50z" fill="#FFFFFF"/>
+  <circle cx="430" cy="170" r="18" fill="#00704F"/>
+  <!-- bag -->
+  <path d="M150 190h210l-18 190a18 18 0 0 1-18 16H186a18 18 0 0 1-18-16L150 190z" fill="#FFC244"/>
+  <path d="M205 190v-24a50 50 0 0 1 100 0v24" fill="none" stroke="#FFFFFF" stroke-width="12" stroke-linecap="round"/>
+  <rect x="150" y="190" width="210" height="26" rx="6" fill="#F0B02A"/>
+  <circle cx="255" cy="300" r="28" fill="#10263F"/>
+  <circle cx="255" cy="300" r="10" fill="#FFC244"/>
+  <!-- produce peeking out -->
+  <circle cx="200" cy="168" r="30" fill="#E8553C"/>
+  <path d="M200 140c-4-14 4-22 14-24" fill="none" stroke="#7CCB6B" stroke-width="8" stroke-linecap="round"/>
+  <ellipse cx="318" cy="160" rx="22" ry="40" fill="#7CCB6B" transform="rotate(18 318 160)"/>
+  <ellipse cx="270" cy="150" rx="34" ry="22" fill="#F5E6B8"/>
+  <path d="M250 150c10-8 30-8 40 0" fill="none" stroke="#C99A3A" stroke-width="5" stroke-linecap="round"/>
+</svg>

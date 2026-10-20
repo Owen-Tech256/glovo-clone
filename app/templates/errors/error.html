@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} | {{ config.SITE_NAME }}{% endblock %}
+{% block content %}
+  <section class="error-page" aria-labelledby="error-title">
+    <p class="error-page__code">Error {{ code }}</p>
+    <h1 id="error-title">{{ title }}</h1>
+    <p>{{ message }}</p>
+    <p class="muted">Reference: <code>{{ request_id }}</code></p>
+  </section>
+{% endblock %}
